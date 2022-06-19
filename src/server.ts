@@ -54,17 +54,17 @@ import { filterImageFromURL, deleteLocalFiles } from "./util/util";
 					res.send(path);
 				} catch (error) {
 					console.log(error);
-					res.json({
+					res.status(400).json({
 						message: "the url is invalid",
 					});
 				}
 			} else {
-				res.json({
+				res.status(400).json({
 					message: "the url is invalid",
 				});
 			}
 		} else {
-			res.json({
+			res.status(400).json({
 				message: "the url is invalid",
 			});
 		}
