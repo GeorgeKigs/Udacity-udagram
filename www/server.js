@@ -13,6 +13,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
+const util_1 = require("./util/util");
 (() => __awaiter(void 0, void 0, void 0, function* () {
     // Init the Express application
     const app = (0, express_1.default)();
@@ -40,10 +41,39 @@ const express_1 = __importDefault(require("express"));
     app.get("/", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         res.send("try GET /filteredimage?image_url={{}}");
     }));
-    app.get("/filteredimage", (req, res) => {
-        var url = req.query["image-url"];
-        res.send(url);
-    });
+    app.get("/filteredimage", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+        console.log(req.query);
+        var extenstions = ["jpg", "jpeg", "png", "gif"];
+        let url = req.query["image_url"];
+        if (typeof url == "string" && url.startsWith("https://")) {
+            let ext_list = url.split(".");
+            let len_ext = ext_list.length - 1;
+            let ext = ext_list[len_ext].toLowerCase();
+            if (extenstions.includes(ext)) {
+                try {
+                    let path = yield (0, util_1.filterImageFromURL)(url);
+                    yield (0, util_1.deleteLocalFiles)([path]);
+                    res.send(path);
+                }
+                catch (error) {
+                    console.log(error);
+                    res.json({
+                        message: "the url is invalid",
+                    });
+                }
+            }
+            else {
+                res.json({
+                    message: "the url is invalid",
+                });
+            }
+        }
+        else {
+            res.json({
+                message: "the url is invalid",
+            });
+        }
+    }));
     // Start the Server
     app.listen(port, () => {
         console.log(`server running http://localhost:${port}`);
