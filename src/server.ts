@@ -1,6 +1,6 @@
 import express, { Request, Response } from "express";
-import bodyParser from "body-parser";
 import { filterImageFromURL, deleteLocalFiles } from "./util/util";
+import fs from "fs";
 
 (async () => {
 	// Init the Express application
@@ -50,8 +50,16 @@ import { filterImageFromURL, deleteLocalFiles } from "./util/util";
 			if (extenstions.includes(ext)) {
 				try {
 					let path: string = await filterImageFromURL(url);
-					await deleteLocalFiles([path]);
-					res.send(path);
+
+					var image = fs.createReadStream(path);
+
+					image.on("open", () => {
+						res.set("Content-Type", "image/jpeg");
+						image.pipe(res);
+					});
+					image.on("close", () => {
+						deleteLocalFiles([path]);
+					});
 				} catch (error) {
 					console.log(error);
 					res.status(400).json({
