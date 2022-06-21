@@ -14,6 +14,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const util_1 = require("./util/util");
+const fs_1 = __importDefault(require("fs"));
 (() => __awaiter(void 0, void 0, void 0, function* () {
     // Init the Express application
     const app = (0, express_1.default)();
@@ -52,24 +53,30 @@ const util_1 = require("./util/util");
             if (extenstions.includes(ext)) {
                 try {
                     let path = yield (0, util_1.filterImageFromURL)(url);
-                    yield (0, util_1.deleteLocalFiles)([path]);
-                    res.send(path);
+                    var image = fs_1.default.createReadStream(path);
+                    image.on("open", () => {
+                        res.set("Content-Type", "image/jpeg");
+                        image.pipe(res);
+                    });
+                    image.on("close", () => {
+                        (0, util_1.deleteLocalFiles)([path]);
+                    });
                 }
                 catch (error) {
                     console.log(error);
-                    res.json({
+                    res.status(400).json({
                         message: "the url is invalid",
                     });
                 }
             }
             else {
-                res.json({
+                res.status(400).json({
                     message: "the url is invalid",
                 });
             }
         }
         else {
-            res.json({
+            res.status(400).json({
                 message: "the url is invalid",
             });
         }
